@@ -1,0 +1,104 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="$(ProjectDir)$(OutDir)Microsoft.AspNet.SignalR.Core.dll" #>
+<#@ assembly name="$(TargetPath)" #>
+<#@ assembly name="$(ProjectDir)$(OutDir)CsTsInterop.dll" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Reflection" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ Include file="../Shared/TtFunctions.ttinclude" #>
+<#@ output extension=".d.ts" #>
+/// <reference path="../../Scripts/typings/signalr/signalr.d.ts"/>
+/// <reference path="CsTsInterop.ts"/>
+<#
+	CollectTypeInfo();
+	foreach (Type hubType in hubList)
+    {
+		var hubName = ToInitialLower(hubType.Name);
+		var hubAttreibute = hubType.GetCustomAttribute<CsTsInterop.TsHubAttribute>();
+		Type clinentInterface = null;
+		if(hubAttreibute != null && hubAttreibute.ClientInterface != null)
+        {
+			clinentInterface = hubAttreibute.ClientInterface;
+        }
+
+
+    var exceptList = new[]{
+        "get_Clients","set_Clients","get_Context","set_Context","get_Groups","set_Groups","OnDisconnected","OnConnected","OnReconnected","Dispose","ToString","Equals","GetHashCode","GetType"
+    };
+    var targetMethods = hubType.GetMethods().Where(c => !exceptList.Contains(c.Name));
+#>
+ 
+//SignalR拡張(HubProxy定義) 
+interface SignalR { 
+    <#=hubName#>: I<#=hubType.Name#>Proxy;
+}    
+
+//Server/Client定義
+interface I<#=hubType.Name#>Proxy extends HubProxy {
+    server: I<#=hubType.Name#>Server;
+    client: I<#=hubType.Name#>Client;
+}
+
+//サーバー定義関数
+interface I<#= hubType.Name #>Server {                 
+<#
+foreach (var mi in targetMethods)
+{
+    var paramList = mi.GetParameters();
+    var argSet = paramList.Select(c => string.Format("{0}:{1}", c.Name, ToTsType(c.ParameterType))).ToArray();
+    var argStr = string.Join(",", argSet);
+    var name = ToInitialLower(mi.Name);
+    var returnJsType = ToTsType(mi.ReturnType);
+	var coallbackTypeName = "srResult<"+returnJsType+">";    
+	if(returnJsType == "void")
+    {
+		coallbackTypeName = "voidResult";
+    }
+#>
+    <#= name #>(<#=argStr#>):<#=coallbackTypeName#>;
+<#
+}               
+#>
+}   
+<#
+
+#> 
+
+//クライアントへのプッシュ通知関数
+interface I<#=hubType.Name #>Client {
+<#
+
+if (clinentInterface != null)
+{
+    var methods = clinentInterface.GetMethods();
+
+foreach (var mi in methods)
+{
+    var name = ToInitialLower(mi.Name);
+    var paramList = mi.GetParameters();
+    var argSet = paramList.Select(c => string.Format("{0}:{1}", c.Name, ToTsType(c.ParameterType))).ToArray();
+    var argStr = string.Join(",", argSet);
+#>    <#= name #>(<#=argStr#>);
+<#
+}
+}
+#>
+}
+
+<#	
+}
+#> 
+interface voidResult
+{
+    always(callback: () =>any);
+    done(callback: () =>any);
+    fail(callback: () =>any);
+}
+interface srResult<T>
+{
+    always(callback: (value:T) =>any);
+    done(callback: (value:T) =>any);
+    fail(callback: (value:T) =>any);
+}

@@ -1,0 +1,91 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="$(ProjectDir)$(OutDir)System.Web.Mvc.dll" #>
+<#@ assembly name="$(TargetPath)" #>
+<#@ assembly name="$(ProjectDir)$(OutDir)CsTsInterop.dll" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Web.Mvc" #>
+<#@ import namespace="System.Reflection" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ Include file="../Shared/TtFunctions.ttinclude" #>
+<#@ output extension=".ts" #> 
+<#
+	CollectTypeInfo();
+    foreach (var controllerType in controllerList)
+    {
+	
+	////////////////////////////////////////////////////////////
+	/// <ControlerType> インターフェース作成対象となるControlerの形を指定
+	////////////////////////////////////////////////////////////
+
+	var controllerName = controllerType.Name;
+
+	var attribute = controllerType.GetCustomAttributes(typeof(CsTsInterop.TsControllerAttribute),true).First() as CsTsInterop.TsControllerAttribute;
+	var offsetUrl = attribute.OffsetUrl ?? "";
+    var targetMethods = controllerType
+							.GetMethods()
+							.Where(m=>m.CustomAttributes.Any(ca=>ca.AttributeType == typeof(CsTsInterop.TsControllerActionAttribute))); 
+#>
+// Module
+module <#= controllerName #> {
+    export var baseUrl = "";
+    export var offsetUrl = "<#= offsetUrl #>";
+	var defaultOption = 
+		{ 
+			dataType: 'json',
+			async: true,
+		  　traditional: true,
+			cache : false,
+		};
+
+<#  foreach (var item in targetMethods)
+    {
+		var paramList = item.GetParameters();
+		var argSet = paramList.Select(c => string.Format("{0}:{1}", c.Name, ToTsType(c.ParameterType))).ToList();
+		argSet.Add("option?: any");
+		var argStr = string.Join(",", argSet);
+		var dataSet = paramList.Where(c=>!definedTypes.Contains(c.ParameterType)).Select(c => string.Format("{0}:{0}", c.Name));
+		var dataStr = string.Join(",", dataSet);
+		
+		var definedDataSet = paramList.Where(c=>definedTypes.Contains(c.ParameterType));
+		StringBuilder sb = new StringBuilder();
+        foreach (var defdArg in definedDataSet)
+        {
+			sb.AppendLine(string.Format("data =  $.extend(false, data,{0});",defdArg.Name));
+        }
+
+		bool isPost = item.CustomAttributes.Any(ca=>ca.AttributeType == typeof(HttpPostAttribute));
+		var tscaa = item.GetCustomAttribute<CsTsInterop.TsControllerActionAttribute>();
+		var methodType = isPost?"POST":"GET";
+		var resultTpye  = "any";
+		if(tscaa != null)
+        {
+            if (tscaa.ResultType != null)
+            {
+				resultTpye = ToTsType(tscaa.ResultType);		 
+            }
+        }
+
+#>
+
+		export function <#= item.Name #>(<#=argStr#>): JQueryPromise<<#=resultTpye#>>
+		{
+			var data = { <#= dataStr #> };
+			
+			<#= sb.ToString() #>
+
+			var arg = { data: data };
+			var requestType = {type:"<#=methodType#>"};
+
+			var customOption = $.extend(false, defaultOption,requestType, arg, option);
+			return $.ajax(baseUrl + offsetUrl + "/<#= item.Name #>", customOption);
+		}
+<#	}
+#> 
+ 
+}
+<#	
+}
+#> 

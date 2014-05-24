@@ -1,0 +1,5 @@
+﻿@model string
+@{
+    Dictionary<string, object> dic = new Dictionary<string, object>();
+    dic.Add("class", "form-control");
+}@Html.TextArea("", Model, 10, 10, dic)

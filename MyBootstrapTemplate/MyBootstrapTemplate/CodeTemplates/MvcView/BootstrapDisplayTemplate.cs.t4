@@ -1,0 +1,29 @@
+﻿<#@ template language="C#" HostSpecific="True" #>
+<#@ output extension=".cshtml" #>
+<#@ include file="Imports.include.t4" #>
+@model <#= ViewDataTypeName #>
+<#
+foreach (PropertyMetadata property in ModelMetadata.Properties) {
+    if (property.Scaffold && !property.IsPrimaryKey && !property.IsForeignKey) {
+#>
+<#
+        // This is a temporary work around until core scaffolding provides support for independent associations.
+        if (property.IsAssociation && GetRelatedModelMetadata(property) == null) {
+            continue;
+        }
+#>
+        <dt>
+            @Html.DisplayNameFor(model => model.<#= GetValueExpression(property) #>)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.<#= GetValueExpression(property) #>)
+        </dd>
+
+<#
+    }
+}
+#>
+
+
+<#@ include file="ModelMetadataFunctions.cs.include.t4" #>

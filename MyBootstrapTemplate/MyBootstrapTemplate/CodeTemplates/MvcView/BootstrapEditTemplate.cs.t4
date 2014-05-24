@@ -1,0 +1,51 @@
+﻿<#@ template language="C#" HostSpecific="True" #>
+<#@ output extension=".cshtml" #>
+<#@ include file="Imports.include.t4" #>
+@model <#= ViewDataTypeName #>
+<#
+foreach (PropertyMetadata property in ModelMetadata.Properties) {
+    if (property.Scaffold && !property.IsAssociation) {
+        if (property.IsPrimaryKey) {
+#>
+        @Html.HiddenFor(model => model.<#= property.PropertyName #>)
+
+<#
+        } else if (!property.IsReadOnly) {
+#>
+        <div class="form-group">
+<#
+            if (property.IsForeignKey) {
+#>
+            @Html.LabelFor(model => model.<#= property.PropertyName #>, "<#= GetAssociationName(property) #>", new { @class = "control-label col-sm-2" })
+<#
+            } else {
+#>
+            @Html.LabelFor(model => model.<#= property.PropertyName #>, new { @class = "control-label col-md-2" })
+<#
+            }
+#>
+            <div class="col-md-4">
+<#
+            if (property.IsForeignKey) {
+#>
+                @Html.DropDownListFor(model=>model.<#= property.PropertyName #>, null, new { @class = "form-control"})
+<#
+            } else {
+#>
+                @Html.EditorFor(model => model.<#= property.PropertyName #>)
+<#
+            }
+#>
+                @Html.ValidationMessageFor(model => model.<#= property.PropertyName #>)
+            </div>
+        </div>
+
+<#
+        }
+    }
+}
+#>
+    
+
+
+<#@ include file="ModelMetadataFunctions.cs.include.t4" #>

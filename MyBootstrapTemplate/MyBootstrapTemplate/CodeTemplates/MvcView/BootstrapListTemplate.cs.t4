@@ -1,0 +1,76 @@
+﻿<#@ template language="C#" HostSpecific="True" #>
+<#@ output extension=".cshtml" #>
+<#@ include file="Imports.include.t4" #>
+@model IQueryable<#= "<" + ViewDataTypeName + ">" #>
+@{
+	var qp = new MvcHelper.QueryPager<<#= ViewDataTypeName #>>(Model);
+}
+<p>
+    @Html.ActionLink("新規追加", "Create",null, new { @class = "btn btn-primary" })
+</p>
+@Html.Partial("Parts/Pager",qp.GetPagerContext(10))
+<table class="table table-striped table-bordered table-condensed">
+    <tr>
+<#
+IEnumerable<PropertyMetadata> properties = ModelMetadata.Properties;
+foreach (PropertyMetadata property in properties) {
+    if (property.Scaffold && !property.IsPrimaryKey && !property.IsForeignKey) {
+#>
+<#
+        // This is a temporary work around until core scaffolding provides support for independent associations.
+        if (property.IsAssociation && GetRelatedModelMetadata(property) == null) {
+            continue;
+        }
+#>
+        <th>
+            @qp.GetSortLinkFor(model => model.<#= GetValueExpression(property) #>)
+        </th>
+<#
+    }
+}
+#>
+        <th></th>
+    </tr>
+@foreach (var item in qp.Rows) {
+    <tr>
+<#
+foreach (PropertyMetadata property in properties) {
+    if (property.Scaffold && !property.IsPrimaryKey && !property.IsForeignKey) {
+#>
+<#
+        // This is a temporary work around until core scaffolding provides support for independent associations.
+        if (property.IsAssociation && GetRelatedModelMetadata(property) == null) {
+            continue;
+        }
+#>
+        <td>
+            @Html.DisplayFor(modelItem => <#= "item." + GetValueExpression(property) #>)
+        </td>
+<#
+    }
+}
+
+string pkName = GetPrimaryKeyName();
+if (pkName != null) {
+#>
+        <td>
+            @Html.ActionLink("編集", "Edit", new { id=item.<#= pkName #> }, new { @class = "btn btn-default" }) 
+            @Html.ActionLink("詳細", "Details", new { id=item.<#= pkName #> }, new { @class = "btn btn-default" }) 
+            @Html.ActionLink("削除", "Delete", new { id=item.<#= pkName #> }, new { @class = "btn btn-default" })
+        </td>
+<#
+} else {
+#>
+        <td>
+            @Html.ActionLink("編集", "Edit", new { /* id=item.PrimaryKey */ }, new { @class = "btn btn-default"}) 
+            @Html.ActionLink("詳細", "Details", new { /* id=item.PrimaryKey */ }, new { @class = "btn btn-default"}) 
+            @Html.ActionLink("削除", "Delete", new { /* id=item.PrimaryKey */ }, new { @class = "btn btn-default"})
+        </td>
+<#
+}
+#>
+    </tr>
+}
+</table>
+@Html.Partial("Parts/Pager",qp.GetPagerContext(10))
+<#@ include file="ModelMetadataFunctions.cs.include.t4" #>

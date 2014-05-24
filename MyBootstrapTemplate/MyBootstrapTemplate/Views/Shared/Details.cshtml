@@ -1,0 +1,18 @@
+﻿@{
+    ViewBag.Title =" 詳細";
+}
+
+
+<h2>詳細</h2>
+
+<div>
+    <hr />
+    <dl class="dl-horizontal">
+        @Html.DisplayForModel()
+    </dl>
+    <hr />
+</div>
+
+<p>
+    @Html.ActionLink("戻る", "Index", null, new { @class = "btn btn btn-default" })
+</p>

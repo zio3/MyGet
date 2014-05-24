@@ -1,0 +1,163 @@
+﻿<#@ IntelliSenseLanguage processor="tangibleT4Editor" language="C#" #>
+<#+ 
+
+	Type[] definedEnumTypes;
+	Type[] definedTypes;
+	Type[] controllerList;
+	Type[] hubList;
+
+
+	void CollectTypeInfo()
+	{
+		//初期形情報の収集
+		var enums = new List<Type>();
+		var typeInterfaceList = new List<Type>();
+		var controllers = new List<Type>();
+		var hubs = new List<Type>();
+		var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+		foreach (var assembly in assemblies)
+		{
+			foreach (var type in assembly.DefinedTypes)
+			{
+				if(HasAttribute<CsTsInterop.TsEnumAttribute>(type))
+				{
+					enums.Add(type);
+				}
+				if(HasAttribute<CsTsInterop.TsTypeInterfaceAttribute>(type))
+				{
+					typeInterfaceList.Add(type);
+				}
+				if(HasAttribute<CsTsInterop.TsControllerAttribute>(type))
+				{
+					controllers.Add(type);
+				}
+				if(HasAttribute<CsTsInterop.TsHubAttribute>(type))
+				{
+					hubs.Add(type);
+				}
+			}
+		}
+		definedEnumTypes = enums.ToArray();
+		definedTypes = typeInterfaceList.ToArray();
+		controllerList = controllers.ToArray();
+		hubList = hubs.ToArray();
+    }
+
+
+	static bool HasAttribute<T>(Type t)
+		where T : Attribute
+        {
+            var ca = t.GetCustomAttribute<T>();
+            return ca != null;
+        }
+
+
+
+
+
+
+	bool IsDefinedType(Type t)
+    {
+		return Array.IndexOf<Type>(definedTypes,t) != -1;
+    }
+
+	bool IsDefinedArrayType(Type t)
+    { 
+		if(!IsCollection(t))
+			return false;
+		return IsDefinedType(GetElementType(t));		
+	}
+
+	bool IsCollection(Type t)
+    {
+		if(t == typeof(string))
+			return false;
+
+		if(t.IsArray)
+			return true;
+		return typeof(System.Collections.IEnumerable).IsAssignableFrom(t);
+    }
+
+	Type GetElementType(Type collectionType)
+    {
+		if(collectionType.IsArray)
+			return collectionType.GetElementType();
+		return collectionType.GetGenericArguments()[0];
+    }
+
+	Type GetGenericTypeDefinition(Type t)
+    {
+		if(!t.IsGenericType)
+			return null;
+		return t.GetGenericArguments()[0];
+    }
+
+	bool IsTaskType(Type t)
+    {
+		if(!t.IsGenericType)
+			return false;
+		return t.GetGenericTypeDefinition().Name.StartsWith("Task");
+    }
+
+
+    string ToTsType(Type t)
+    {
+		if(IsCollection(t) )
+        {
+			var et = GetElementType(t);
+			return ToTsType(et) + "[]";
+        }
+
+		if(IsTaskType(t))
+        {
+			var pt = GetGenericTypeDefinition(t);
+			return ToTsType(pt);
+        }
+		
+        if (t == typeof(string))
+            return "string";
+        if (t == typeof(DateTime))
+            return "string";
+        if (t == typeof(int))
+            return "number";
+        if (t == typeof(long))
+            return "number";
+        if (t == typeof(float))
+            return "number";
+        if (t == typeof(double))
+            return "number";
+        if (t == typeof(decimal))
+            return "number";
+        if (t == typeof(char))
+            return "number";
+        if (t == typeof(byte))
+            return "number";
+
+        if (t == typeof(bool))
+            return "boolean";
+
+        if (t == typeof(void))
+            return "void";
+
+        if (definedTypes.Contains(t))
+            return "I" + t.Name;
+        
+		if(definedEnumTypes.Contains(t))
+        {
+			return "CsEnums." + t.Name;
+        }
+
+
+        return "any";
+    }
+	
+    string ToInitialLower(string str)
+    {
+        var array = str.ToArray();
+        array[0] = char.ToLower(array[0]);
+        return new string(array);
+    }
+
+
+
+#>

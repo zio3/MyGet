@@ -1,0 +1,293 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.ComponentModel.DataAnnotations" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Reflection" #>
+<#@ import namespace="System.ComponentModel.DataAnnotations" #>
+<#@ output extension=".ts" #>
+<#@ Include file="TtFunctions.ttinclude" #>
+<#@ assembly name="$(TargetPath)" #>
+<#@ assembly name="$(ProjectDir)$(OutDir)CsTsInterop.dll" #>
+<#
+
+	CollectTypeInfo();
+#>
+//#region "EnumDefines"
+module CsEnums
+{
+<#
+    foreach (Type item in definedEnumTypes) 
+    {
+		var enumValues = Enum.GetValues(item);
+
+	#>
+	export enum <#=item.Name#>
+	{
+<#
+        foreach (var item2 in enumValues)
+        {
+#>		<#=item2.ToString() #> = <#=((int)item2).ToString() #>,
+<#
+		}
+		#>
+	};
+<#
+	}
+#>
+}
+//#endregion "EnumDefines"
+
+//#region "TypeDefines"
+<#
+    foreach (var item in definedTypes)
+    {
+        var properties = item.GetProperties();
+#> 
+interface I<#=item.Name#> {
+<#
+      foreach (var pi in properties)
+	  {
+#>
+	<#=pi.Name #> : <#=ToTsType(pi.PropertyType)#>;
+<#
+	  }
+#>
+}
+<#
+    }
+#>
+//#endregion "TypeDefines"
+
+module Metadata
+{
+<#
+    foreach (Type item in definedTypes)
+    {
+
+	#> 
+	export class I<#=item.Name#> implements IMetadata
+	{
+<#
+        var properties = item.GetProperties();
+		var displayNameDic = new Dictionary<string,string>();
+		var validationDic = new Dictionary<string,Dictionary<string,KeyValuePair<string,object>[]>>();
+		foreach (var pi in properties)
+		{
+			var name = pi.Name;	
+			var displayName = name;
+			var displayAttribute = pi.GetCustomAttributes(typeof(DisplayAttribute),true).FirstOrDefault() as DisplayAttribute;
+			if(displayAttribute != null)
+			{
+				displayName = displayAttribute.Name;
+			}
+			displayNameDic.Add(name,displayName);
+			var dic = new Dictionary<string,KeyValuePair<string,object>[]>();
+
+			var reqAttribute = pi.GetCustomAttributes(typeof(RequiredAttribute),true).FirstOrDefault() as RequiredAttribute;
+			if(reqAttribute != null)
+			{
+				var message = reqAttribute.FormatErrorMessage(name);
+				dic.Add("required",new[]{
+					new KeyValuePair<string,object>("message",message)
+                });
+			}
+			var rangeAttribute = pi.GetCustomAttributes(typeof(RangeAttribute),true).FirstOrDefault() as RangeAttribute;
+			if(rangeAttribute != null)
+			{
+				var message = rangeAttribute.FormatErrorMessage(name);
+				var minimum = rangeAttribute.Minimum;
+				var maximum = rangeAttribute.Maximum;
+				
+				dic.Add("min",new[]{
+					new KeyValuePair<string,object>("params",minimum),
+					new KeyValuePair<string,object>("message",message),
+                });
+				dic.Add("max",new[]{
+					new KeyValuePair<string,object>("params",maximum),
+					new KeyValuePair<string,object>("message",message),
+                });
+			} 
+		
+			var maxLengthAttribute = pi.GetCustomAttributes(typeof(MaxLengthAttribute),true).FirstOrDefault() as MaxLengthAttribute;
+			if(maxLengthAttribute != null)
+			{
+				var message = maxLengthAttribute.FormatErrorMessage(name);
+				var length = maxLengthAttribute.Length;
+				dic.Add("maxLength",new[]{
+					new KeyValuePair<string,object>("params",length),
+					new KeyValuePair<string,object>("message",message),
+                });
+
+			}
+			var minLengthAttribute = pi.GetCustomAttributes(typeof(MinLengthAttribute),true).FirstOrDefault() as MinLengthAttribute;
+			if(minLengthAttribute != null)
+			{
+				var message = minLengthAttribute.FormatErrorMessage(name);
+				var length = minLengthAttribute.Length;
+				dic.Add("minLength",new[]{
+					new KeyValuePair<string,object>("params",length),
+					new KeyValuePair<string,object>("message",message),
+                });
+			}
+			var strLengthAttribute = pi.GetCustomAttributes(typeof(StringLengthAttribute),true).FirstOrDefault() as StringLengthAttribute;
+			if(strLengthAttribute != null)
+			{
+				var message = strLengthAttribute.FormatErrorMessage(name);
+				var maxLength = strLengthAttribute.MaximumLength;
+				dic.Add("maxLength",new[]{
+					new KeyValuePair<string,object>("params",maxLength),
+					new KeyValuePair<string,object>("message",message),
+                });
+				var minLength = strLengthAttribute.MinimumLength;
+				if(minLength != 0)
+                {
+					dic.Add("minLength",new[]{
+						new KeyValuePair<string,object>("params",minLength),
+						new KeyValuePair<string,object>("message",message),
+					});
+                }
+			}
+
+		
+			var regularExpressionAttribute = pi.GetCustomAttributes(typeof(RegularExpressionAttribute),true).FirstOrDefault() as RegularExpressionAttribute;
+			if(regularExpressionAttribute  != null)
+			{
+				var message = regularExpressionAttribute .FormatErrorMessage(name);
+				var pattern = regularExpressionAttribute .Pattern;
+				dic.Add("pattern",new[]{
+					new KeyValuePair<string,object>("params",pattern),
+					new KeyValuePair<string,object>("message",message),
+                });
+			}			
+
+			#>
+			static <#= name #> = {
+<#
+			foreach(var validateItem in dic)
+            {
+				var nvStrs = validateItem.Value.Select(c=>
+					string.Format(c.Value is string?@"{0}:""{1}""":@"{0}:{1}" ,c.Key,c.Value)).ToArray();
+			   var vldJson = string.Join(",",nvStrs);
+
+#>
+				<#= validateItem.Key #>: { <#= vldJson #> },
+<#
+			}
+#>
+			};
+<#
+		}
+#>
+		static DisplayNames =
+        {
+<#
+        foreach (var nameDic in displayNameDic)
+        {#>
+			<#=nameDic.Key #>:"<#=nameDic.Value #>",
+<#		 
+        }		
+#> 
+        }
+	}
+<#
+	}
+#>
+}
+
+interface IMetadata {
+
+} 
+
+module ObjectValidator {
+    export function Validate(entity: any, metadataClass: IMetadata) {
+        var resultObject: any = new Object();
+        var errors = new Array<string>();
+        resultObject.$AllErros = errors;
+        resultObject.$Erros = new Object();
+
+        var metadata = metadataClass;
+        var kvp = _.pairs(entity);
+
+        _(kvp).each((vp: any[]) => {
+            var item = metadata[vp[0]];
+            if (item == null)
+                return;
+            var mdkvps = _.pairs(item);
+            var fieldErrors = ValidationField(vp[1], vp[1], mdkvps);
+            if (fieldErrors.length != 0)
+            {
+                resultObject.$AllErros = resultObject.$AllErros.concat(fieldErrors);
+                resultObject.$Erros[vp[0]] = fieldErrors;
+                resultObject[vp[0]] = fieldErrors;
+            }
+        });
+
+        return resultObject;
+    }
+
+    function ValidationField(fieldName: string, value: any, metadatas: any[][]): Array<string> {
+        var results = new Array<string>();
+
+        _(metadatas).each(mdkvp => {
+            if (mdkvp[0] == "required")
+            {
+                if (!value)
+                {
+                    results.push(mdkvp[1].message);
+                }
+            }
+
+            //以後,nullだったら評価しないのでこちらで返す。
+            if (value == null)
+                return;
+
+            try
+            {
+                switch (mdkvp[0]) {
+                    case "maxLength":
+                        if ((<string>value).length > (<number>(mdkvp[1].params)))
+                        {
+                            results.push(mdkvp[1].message);
+                        }
+                        //
+                        break;
+                    case "minLength":
+                        if ((<string>value).length < (<number>(mdkvp[1].params)))
+                        {
+                            results.push(mdkvp[1].message);
+                        }
+                        //
+                        break;
+                    case "pattern":
+                        {
+                            var match = new RegExp(mdkvp[1].params).exec(value);
+                            if (!(match && (match.index === 0) && (match[0].length === value.length)))
+                            {
+                                results.push(mdkvp[1].message);
+                            }
+                        }
+                        break;
+                    case "max":
+                        if (value > mdkvp[1].params)
+                        {
+                            results.push(mdkvp[1].message);
+                        }
+                        break;
+                    case "min":
+                        if (value < mdkvp[1].params)
+                        {
+                            results.push(mdkvp[1].message);
+                        }
+                        break;
+                }
+            }
+            catch (e)
+            {
+            }
+        });
+        return results;
+    }
+}
+
