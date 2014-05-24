@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace CsTsInterop
 {
-
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
     public sealed class TsControllerAttribute : Attribute
     {
