@@ -39,7 +39,6 @@ module <#= controllerName #> {
 		  　traditional: true,
 			cache : false,
 		};
-
 <#  foreach (var item in targetMethods)
     {
 		var paramList = item.GetParameters();
