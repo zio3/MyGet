@@ -14,7 +14,6 @@ namespace System.Linq.Dynamic
         public static IQueryable<T> Where<T>(this IQueryable<T> source, string predicate, params object[] values) {
             return (IQueryable<T>)Where((IQueryable)source, predicate, values);
         }
-
         public static IQueryable Where(this IQueryable source, string predicate, params object[] values) {
             if (source == null) throw new ArgumentNullException("source");
             if (predicate == null) throw new ArgumentNullException("predicate");
