@@ -12,7 +12,7 @@ namespace CsTsInterop
         public string OffsetUrl { get; set; }
 
         public TsControllerAttribute()
-        {
+        { 
 
         }
         public TsControllerAttribute(string offsetUrl)
