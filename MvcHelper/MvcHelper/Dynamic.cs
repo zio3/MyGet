@@ -24,6 +24,7 @@ namespace System.Linq.Dynamic
                     new Type[] { source.ElementType },
                     source.Expression, Expression.Quote(lambda)));
         }
+
         public static IQueryable Select(this IQueryable source, string selector, params object[] values) {
             if (source == null) throw new ArgumentNullException("source");
             if (selector == null) throw new ArgumentNullException("selector");
