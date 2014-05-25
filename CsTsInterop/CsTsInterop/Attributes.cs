@@ -41,6 +41,12 @@ namespace CsTsInterop
         }
     }
 
+    [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
+    public sealed class TsControllerHtmlActionAttribute : Attribute
+    {
+    }
+
+
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
     public sealed class TsTypeInterfaceAttribute : Attribute
     {
