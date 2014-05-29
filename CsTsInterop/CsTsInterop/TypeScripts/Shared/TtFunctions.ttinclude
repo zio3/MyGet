@@ -17,24 +17,39 @@
 		var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
 		foreach (var assembly in assemblies)
 		{
-			foreach (var type in assembly.DefinedTypes)
+			IEnumerable<Type> types;
+			try
 			{
-				if(HasAttribute<CsTsInterop.TsEnumAttribute>(type))
+			types=  assembly.DefinedTypes;
+			}
+			catch(ReflectionTypeLoadException rtle)
+			{
+				types = rtle.Types;
+			}
+			try
+			{
+				foreach (var type in types)
 				{
-					enums.Add(type);
+					if(HasAttribute<CsTsInterop.TsEnumAttribute>(type))
+					{
+						enums.Add(type);
+					}
+					if(HasAttribute<CsTsInterop.TsTypeInterfaceAttribute>(type))
+					{
+						typeInterfaceList.Add(type);
+					}
+					if(HasAttribute<CsTsInterop.TsControllerAttribute>(type))
+					{
+						controllers.Add(type);
+					}
+					if(HasAttribute<CsTsInterop.TsHubAttribute>(type))
+					{
+						hubs.Add(type);
+					}
 				}
-				if(HasAttribute<CsTsInterop.TsTypeInterfaceAttribute>(type))
-				{
-					typeInterfaceList.Add(type);
-				}
-				if(HasAttribute<CsTsInterop.TsControllerAttribute>(type))
-				{
-					controllers.Add(type);
-				}
-				if(HasAttribute<CsTsInterop.TsHubAttribute>(type))
-				{
-					hubs.Add(type);
-				}
+			}
+			catch
+			{
 			}
 		}
 		definedEnumTypes = enums.ToArray();

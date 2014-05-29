@@ -23,7 +23,7 @@ module CsEnums
 		var enumValues = Enum.GetValues(item);
 
 	#>
-	export enum <#=item.Name#>
+	export enum <#=item.Name#> 
 	{
 <#
         foreach (var item2 in enumValues)

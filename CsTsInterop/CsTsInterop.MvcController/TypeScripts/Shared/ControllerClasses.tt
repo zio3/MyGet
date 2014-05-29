@@ -52,7 +52,6 @@ module <#= controllerName #> {
 		  　traditional: true,
 			cache : false,
 		};
-
 <#  foreach (var item in targetMethods)
     {
 		var paramList = item.GetParameters();
@@ -69,7 +68,7 @@ module <#= controllerName #> {
 			sb.AppendLine(string.Format("data =  $.extend(false, data,{0});",defdArg.Name));
         }
 
-		bool isPost = item.CustomAttributes.Any(ca=>ca.AttributeType == typeof(HttpPostAttribute));
+		bool isPost = item.CustomAttributes.Any(ca=>ca.AttributeType.ToString( )== "System.Web.Mvc.HttpPostAttribute");
 		var tscaa = item.GetCustomAttribute<CsTsInterop.TsControllerActionAttribute>();
 		var methodType = isPost?"POST":"GET";
 		var resultTpye  = "any";
@@ -111,7 +110,7 @@ module <#= controllerName #> {
 			sb.AppendLine(string.Format("data =  $.extend(false, data,{0});",defdArg.Name));
         }
 
-		bool isPost = item.CustomAttributes.Any(ca=>ca.AttributeType == typeof(HttpPostAttribute));
+		bool isPost = item.CustomAttributes.Any(ca=>ca.AttributeType.ToString( )== "System.Web.Mvc.HttpPostAttribute");
 		var tscaa = item.GetCustomAttribute<CsTsInterop.TsControllerHtmlActionAttribute>();
 		var methodType = isPost?"POST":"GET";
 		#>
