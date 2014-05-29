@@ -27,6 +27,12 @@
     var targetMethods = controllerType
 							.GetMethods()
 							.Where(m=>m.CustomAttributes.Any(ca=>ca.AttributeType == typeof(CsTsInterop.TsControllerActionAttribute))); 
+
+    var targetHtmlMethods = controllerType
+							.GetMethods()
+							.Where(m=>m.CustomAttributes.Any(ca=>ca.AttributeType == typeof(CsTsInterop.TsControllerHtmlActionAttribute))); 
+
+
 #>
 // Module
 module <#= controllerName #> {
@@ -39,6 +45,14 @@ module <#= controllerName #> {
 		  　traditional: true,
 			cache : false,
 		};
+	var defaultHtmlOption = 
+		{ 
+			dataType: 'html',
+			async: true,
+		  　traditional: true,
+			cache : false,
+		};
+
 <#  foreach (var item in targetMethods)
     {
 		var paramList = item.GetParameters();
@@ -65,9 +79,7 @@ module <#= controllerName #> {
             {
 				resultTpye = ToTsType(tscaa.ResultType);		 
             }
-        }
-
-#>
+        }#>
 
 		export function <#= item.Name #>(<#=argStr#>): JQueryPromise<<#=resultTpye#>>
 		{
@@ -81,8 +93,42 @@ module <#= controllerName #> {
 			var customOption = $.extend(false, defaultOption,requestType, arg, option);
 			return $.ajax(baseUrl + offsetUrl + "/<#= item.Name #>", customOption);
 		}
-<#	}
-#> 
+<#	}#> 
+
+<#  foreach (var item in targetHtmlMethods)
+    {
+		var paramList = item.GetParameters();
+		var argSet = paramList.Select(c => string.Format("{0}:{1}", c.Name, ToTsType(c.ParameterType))).ToList();
+		argSet.Add("option?: any");
+		var argStr = string.Join(",", argSet);
+		var dataSet = paramList.Where(c=>!definedTypes.Contains(c.ParameterType)).Select(c => string.Format("{0}:{0}", c.Name));
+		var dataStr = string.Join(",", dataSet);
+		
+		var definedDataSet = paramList.Where(c=>definedTypes.Contains(c.ParameterType));
+		StringBuilder sb = new StringBuilder();
+        foreach (var defdArg in definedDataSet)
+        {
+			sb.AppendLine(string.Format("data =  $.extend(false, data,{0});",defdArg.Name));
+        }
+
+		bool isPost = item.CustomAttributes.Any(ca=>ca.AttributeType == typeof(HttpPostAttribute));
+		var tscaa = item.GetCustomAttribute<CsTsInterop.TsControllerHtmlActionAttribute>();
+		var methodType = isPost?"POST":"GET";
+		#>
+
+		export function <#= item.Name #>(<#=argStr#>): JQueryPromise<string>
+		{
+			var data = { <#= dataStr #> };
+			
+			<#= sb.ToString() #>
+
+			var arg = { data: data };
+			var requestType = {type:"<#=methodType#>"};
+
+			var customOption = $.extend(false, defaultHtmlOption,requestType, arg, option);
+			return $.ajax(baseUrl + offsetUrl + "/<#= item.Name #>", customOption);
+		}
+<#	}#> 
  
 }
 <#	
