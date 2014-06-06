@@ -1,4 +1,4 @@
-﻿<#@ IntelliSenseLanguage processor="tangibleT4Editor" language="C#" #>
+﻿<#@ template hostspecific="false" language="C#" #>
 <#+ 
 
 	Type[] definedEnumTypes;
