@@ -47,7 +47,7 @@ namespace System.Xml.Linq
 
         static public string AttrStr(this XElement elem, string name)
         {
-            return (string)elem.Attribute("name");
+            return (string)elem.Attribute(name);
         }
         static public int? AttrInt(this XElement elem, string name)
         {
