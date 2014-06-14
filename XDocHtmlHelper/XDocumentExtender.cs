@@ -4,20 +4,27 @@ using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 
-namespace XDocHtmlHelper
+namespace System.Xml.Linq
 {
     static public class XDocumentExtender
     {
         public static string ClassName(this XElement elem)
         {
+            if (elem.Attribute("class") == null)
+                return null;
             return (string)elem.Attribute("class");
         }
         public static bool ClassHas(this XElement elem, string name)
         {
+            if (elem.Attribute("class") == null)
+                return false;
+
             return (((string)elem.Attribute("class")).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)).Contains("name");
         }
         static public bool ClassEqual(this XElement elem, string name)
         {
+            if (elem.Attribute("class") == null)
+                return false;
             return (string)elem.Attribute("class") == name;
         }
 
