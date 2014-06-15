@@ -77,6 +77,60 @@ namespace System.Xml.Linq
             return elem.Attribute(name) != null;
         }
 
+        static Dictionary<string, string> FormToDic(this XElement form)
+        {
+            var result = new Dictionary<string, string>();
+            foreach (var elem in form.Descendants())
+            {
+                var name = (string)elem.Attribute("name");
+                if (string.IsNullOrEmpty(name))
+                    continue;
+
+                switch (elem.Name.LocalName.ToLower())
+                {
+                    case "input":
+                        InputCase(elem, result);
+                        break;
+                    case "textarea":
+                        result[name] = elem.Value;
+                        break;
+                    case "select":
+                        var target = elem.Elements("option").FirstOrDefault(c => c.HasAttribute("selected"));
+                        if (target == null)
+                            target = elem.Elements("option").FirstOrDefault();
+                        if (target == null)
+                            continue;
+                        result[name] = target.AttrStr("value");
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+            return result;
+        }
+
+        static private void InputCase(XElement input, Dictionary<string, string> dic)
+        {
+            var name = (string)input.Attribute("name");
+            switch ((string)input.Attribute("type"))
+            {
+                case "checkbox":
+                    if (input.HasAttribute("checked"))
+                        dic[name] = input.AttrStr("value");
+                    break;
+                case "radio":
+                    if (input.HasAttribute("checked"))
+                        dic[name] = input.AttrStr("value");
+                    break;
+
+                default:
+                    //Console.WriteLine(input.Attribute("type"));
+                    dic[name] = input.AttrStr("value");
+                    break;
+            }
+        }
+
 
     }
 }
