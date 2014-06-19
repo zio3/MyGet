@@ -19,7 +19,7 @@ namespace System.Xml.Linq
             if (elem.Attribute("class") == null)
                 return false;
 
-            return (((string)elem.Attribute("class")).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)).Contains("name");
+            return (((string)elem.Attribute("class")).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)).Contains(name);
         }
         static public bool ClassEqual(this XElement elem, string name)
         {
