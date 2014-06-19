@@ -10,11 +10,11 @@ using System.Windows.Forms;
 
 namespace WebCapture
 {
-    class WebCapture
+    public class WebCapture
     {
         [DllImport("User32.dll", EntryPoint = "SendMessage")]
-        public static extern Int32 SendMessage(IntPtr hWnd, Int32 Msg, IntPtr wParam, int lParam);
-        static Bitmap Capture(string url, int width, int height)
+        private static extern Int32 SendMessage(IntPtr hWnd, Int32 Msg, IntPtr wParam, int lParam);
+        public static Bitmap Capture(string url, int width, int height)
         {
             WebBrowser browser = new WebBrowser();
             browser.Width = width;
