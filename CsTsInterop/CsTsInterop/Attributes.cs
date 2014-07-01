@@ -46,6 +46,18 @@ namespace CsTsInterop
     {
     }
 
+    [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
+    public sealed class TsControllerJsonActionAttribute : Attribute
+    {
+        public Type ResultType { get; set; }
+        public Type ArgType { get; set; }
+
+        public TsControllerJsonActionAttribute(Type ArgType = null, Type resultType = null)
+        {
+            ResultType = resultType;
+        }
+    }
+
 
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
     public sealed class TsTypeInterfaceAttribute : Attribute
