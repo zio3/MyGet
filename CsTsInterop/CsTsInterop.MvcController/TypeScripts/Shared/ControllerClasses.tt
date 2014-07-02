@@ -31,6 +31,10 @@
     var targetHtmlMethods = controllerType
 							.GetMethods()
 							.Where(m=>m.CustomAttributes.Any(ca=>ca.AttributeType == typeof(CsTsInterop.TsControllerHtmlActionAttribute))); 
+    
+	var targetJsonMethods = controllerType
+							.GetMethods()
+							.Where(m=>m.CustomAttributes.Any(ca=>ca.AttributeType == typeof(CsTsInterop.TsControllerJsonActionAttribute))); 
 
 
 #>
@@ -52,6 +56,15 @@ module <#= controllerName #> {
 		  　traditional: true,
 			cache : false,
 		};
+    var defaultJsonOption =
+            {
+                dataType: 'json',
+                contentType: 'application/json',
+                processData: false,
+                async: true,
+                traditional: true,
+                cache: false,
+            };
 <#  foreach (var item in targetMethods)
     {
 		var paramList = item.GetParameters();
@@ -128,6 +141,49 @@ module <#= controllerName #> {
 			return $.ajax(baseUrl + offsetUrl + "/<#= item.Name #>", customOption);
 		}
 <#	}#> 
+
+
+<#  foreach (var item in targetJsonMethods)
+    {
+		var paramList = item.GetParameters();
+
+		var definedDataSet = paramList.Where(c=>definedTypes.Contains(c.ParameterType));
+		var argSet = paramList.Select(c => string.Format("{0}:{1}", c.Name, ToTsType(c.ParameterType))).ToList();
+		argSet.Add("option?: any");
+		var argStr = string.Join(",", argSet);
+		var dataSet = paramList.Select(c => string.Format("{0}:{0}", c.Name));
+		var dataStr = string.Join(",", dataSet);
+		StringBuilder sb = new StringBuilder();
+        
+        
+
+		bool isPost = item.CustomAttributes.Any(ca=>ca.AttributeType.ToString( )== "System.Web.Mvc.HttpPostAttribute");
+		var tscaa = item.GetCustomAttribute<CsTsInterop.TsControllerJsonActionAttribute>();
+		var methodType = isPost?"POST":"GET";
+		var resultTpye  = "any";
+		var argTpye  = "any";
+		if(tscaa != null)
+        {
+            if (tscaa.ResultType != null)
+            {
+				resultTpye = ToTsType(tscaa.ResultType);		 
+            }
+        }
+
+		#>
+
+		export function <#= item.Name #>(<#=argStr#>): JQueryPromise<<#=resultTpye#>>
+		{
+			var data = { <#= dataStr #> };
+			<#= sb.ToString() #>
+			var arg = { data: JSON.stringify(data) };
+			var requestType = {type:"POST"};
+
+			var customOption = $.extend(false, defaultJsonOption,requestType, arg, option);
+			return $.ajax(baseUrl + offsetUrl + "/<#= item.Name #>", customOption);
+		}
+<#	}#> 
+
  
 }
 <#	
