@@ -52,8 +52,9 @@ namespace CsTsInterop
         public Type ResultType { get; set; }
         public Type ArgType { get; set; }
 
-        public TsControllerJsonActionAttribute(Type ArgType = null, Type resultType = null)
+        public TsControllerJsonActionAttribute(Type argType = null, Type resultType = null)
         {
+            ArgType = argType;
             ResultType = resultType;
         }
     }

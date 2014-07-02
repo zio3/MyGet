@@ -1,5 +1,4 @@
-﻿<#@ template hostspecific="false" language="C#" #>
-<#+ 
+﻿<#+ 
 
 	Type[] definedEnumTypes;
 	Type[] definedTypes;
