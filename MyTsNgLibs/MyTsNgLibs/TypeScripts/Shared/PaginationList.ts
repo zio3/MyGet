@@ -1,6 +1,4 @@
-/// <reference path="../../Scripts/typings/underscore/underscore.d.ts" />
-
-interface pageNavi {
+﻿interface pageNavi {
     text: string;
     index: number;
     state: string;
