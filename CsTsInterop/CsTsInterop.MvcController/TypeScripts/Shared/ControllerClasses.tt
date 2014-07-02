@@ -161,7 +161,6 @@ module <#= controllerName #> {
 		var tscaa = item.GetCustomAttribute<CsTsInterop.TsControllerJsonActionAttribute>();
 		var methodType = isPost?"POST":"GET";
 		var resultTpye  = "any";
-		var argTpye  = "any";
 		if(tscaa != null)
         {
             if (tscaa.ResultType != null)
