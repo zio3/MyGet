@@ -211,7 +211,7 @@ module ObjectValidator {
         var kvp = _.pairs(entity);
 
         _(kvp).each((vp: any[]) => {
-            var item = metadata[vp[0]];
+            var item = (<any>metadata)[vp[0]];
             if (item == null)
                 return;
             var mdkvps = _.pairs(item);
