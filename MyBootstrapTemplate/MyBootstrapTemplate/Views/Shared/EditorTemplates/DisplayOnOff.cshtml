@@ -1,0 +1,12 @@
+﻿@model bool
+@{
+    ViewBag.Title = "DisplayOnOff";
+}
+
+<label>
+    @Html.RadioButton("", true,(Model == true)) 表示
+</label>
+<label>
+    @Html.RadioButton("", false, (Model == false)) 非表示
+</label>
+

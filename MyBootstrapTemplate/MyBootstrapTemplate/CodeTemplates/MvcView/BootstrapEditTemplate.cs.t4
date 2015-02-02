@@ -31,9 +31,18 @@ foreach (PropertyMetadata property in ModelMetadata.Properties) {
                 @Html.DropDownListFor(model=>model.<#= property.PropertyName #>, null, new { @class = "form-control"})
 <#
             } else {
-#>
-                @Html.EditorFor(model => model.<#= property.PropertyName #>)
+				if (property.IsEnum && !property.IsEnumFlags)
+				{
+#>			
+				@Html.EnumDropDownListFor(model => model.<#= property.PropertyName #>, htmlAttributes: new { @class = "form-control" })
 <#
+				}
+				else
+				{
+#>			
+				@Html.EditorFor(model => model.<#= property.PropertyName #>)
+<#
+				}
             }
 #>
                 @Html.ValidationMessageFor(model => model.<#= property.PropertyName #>)

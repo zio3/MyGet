@@ -5,6 +5,19 @@
 @{
 	var qp = new MvcHelper.QueryPager<<#= ViewDataTypeName #>>(Model);
 }
+<h2>一覧</h2>
+@* //検索用コード 不要な差削除
+@using (Html.BeginForm(null, null, FormMethod.Get))
+{
+    <div class="form-inline">
+        <div class="form-group">
+            @Html.TextBox("searchkey", null, new { @class = "form-control", placeholder = "検索ワードを指定" })
+        </div>
+        <button type="submit" class="btn btn-default">検索</button>
+    </div>
+}
+*@
+
 <p>
     @Html.ActionLink("新規追加", "Create",null, new { @class = "btn btn-primary" })
 </p>
@@ -21,15 +34,13 @@ foreach (PropertyMetadata property in properties) {
         if (property.IsAssociation && GetRelatedModelMetadata(property) == null) {
             continue;
         }
-#>
-        <th>
+#>        <th>
             @qp.GetSortLinkFor(model => model.<#= GetValueExpression(property) #>)
         </th>
 <#
     }
 }
-#>
-        <th></th>
+#>        <th></th>
     </tr>
 @foreach (var item in qp.Rows) {
     <tr>
@@ -42,14 +53,12 @@ foreach (PropertyMetadata property in properties) {
         if (property.IsAssociation && GetRelatedModelMetadata(property) == null) {
             continue;
         }
-#>
-        <td>
+#>        <td>
             @Html.DisplayFor(modelItem => <#= "item." + GetValueExpression(property) #>)
         </td>
 <#
     }
 }
-
 string pkName = GetPrimaryKeyName();
 if (pkName != null) {
 #>
