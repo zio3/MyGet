@@ -3,7 +3,7 @@
 <#@ include file="Imports.include.t4" #>
 @model IQueryable<#= "<" + ViewDataTypeName + ">" #>
 @{
-	var qp = new MvcHelper.QueryPager<<#= ViewDataTypeName #>>(Model);
+	var qp = new DbQueryHelper.QueryPager<<#= ViewDataTypeName #>>(Model);
 }
 <h2>一覧</h2>
 @* //検索用コード 不要な差削除
