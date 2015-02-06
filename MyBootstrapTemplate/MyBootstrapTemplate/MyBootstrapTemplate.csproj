@@ -36,9 +36,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DbQueryHelper">
-      <HintPath>..\packages\DbQueryHelper.1.0.0.2\lib\net45\DbQueryHelper.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
