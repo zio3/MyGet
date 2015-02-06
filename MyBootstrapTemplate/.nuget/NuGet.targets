@@ -23,7 +23,7 @@
             <PackageSource Include="https://www.nuget.org/api/v2/" />
             <PackageSource Include="https://my-nuget-source/nuget/" />
         -->
-      <PackageSource Include="https://www.myget.org/F/mylibrary/" />
+      <PackageSource Include="https://www.myget.org/F/ziodev/" />
 
     </ItemGroup>
 
