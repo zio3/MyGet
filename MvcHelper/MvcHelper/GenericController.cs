@@ -69,7 +69,7 @@ namespace MvcHelper
 
         //
         // GET: /Generic/
-        mo
+        
         public virtual ActionResult Index()
         {
             var query = this.GetQuery();
