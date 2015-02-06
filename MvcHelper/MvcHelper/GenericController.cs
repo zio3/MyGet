@@ -37,9 +37,39 @@ namespace MvcHelper
             return repository.GetQuery();
         }
 
+        protected override void OnActionExecuting(ActionExecutingContext filterContext)
+        {
+            if (filterContext.HttpContext.Request.HttpMethod.ToLower() == "get")
+            {
+                if (filterContext.HttpContext.Request.UrlReferrer != null)
+                {
+                    ViewBag.__ReturnUrl = filterContext.HttpContext.Request.UrlReferrer.ToString();
+                }
+            }
+            else
+            {
+                ViewBag.__ReturnUrl = filterContext.HttpContext.Request.Form["__ReturnUrl"];
+            }
+
+            base.OnActionExecuting(filterContext);
+        }
+
+        private ActionResult ReturnPage()
+        {
+            var returnUrl = Request.Form["__ReturnUrl"];
+            if (!string.IsNullOrEmpty(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+            else
+            {
+                return RedirectToAction("Index");
+            }
+        }
+
         //
         // GET: /Generic/
-
+        mo
         public virtual ActionResult Index()
         {
             var query = this.GetQuery();
@@ -82,7 +112,7 @@ namespace MvcHelper
 
                 repository.Add(entity);
                 repository.Submit();
-                return RedirectToAction("Index");
+                return ReturnPage();
             }
             catch (Exception e)
             {
@@ -133,7 +163,7 @@ namespace MvcHelper
             {
                 // TODO: Add insert logic here
                 repository.Submit();
-                return RedirectToAction("Index");
+                return ReturnPage();
             }
             catch (Exception e)
             {
@@ -181,7 +211,7 @@ namespace MvcHelper
                 // TODO: Add delete logic here
                 repository.Remove(entity);
                 repository.Submit();
-                return RedirectToAction("Index");
+                return ReturnPage();
             }
             catch (SqlException se)
             {
