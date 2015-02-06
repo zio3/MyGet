@@ -1,5 +1,6 @@
 ﻿@{
     ViewBag.Title = " 削除";
+    var returnUrl = ViewBag.__ReturnUrl as string;
 }
 
 
@@ -10,6 +11,7 @@
 {
 
     @Html.AntiForgeryToken()
+    @Html.Hidden("__ReturnUrl")
     <hr />
     <div>
         <dl class="dl-horizontal">
@@ -19,7 +21,7 @@
     <hr />
     <p>
         <input type="submit" class="btn btn-primary" value="削除">
-        @Html.ActionLink("戻る", "Index", null, new { @class = "btn btn-default" })
+        @Html.Partial("Parts/ReturnLinkButton")
     </p>
 }
 

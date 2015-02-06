@@ -1,0 +1,12 @@
+﻿@{
+    var returnUrl = ViewBag.__ReturnUrl as string;
+}
+
+@if (string.IsNullOrEmpty(returnUrl))
+{
+    @Html.ActionLink("戻る", "index", null, new { @class = "btn  btn-default" })
+}
+else
+{
+    <a href="@returnUrl" class="btn btn-default">戻る</a>
+}

@@ -70,6 +70,7 @@
     <None Include="Views\Shared\EditorTemplates\DisplayOnOff.cshtml" />
     <None Include="Views\Shared\EditorTemplates\EnableOrDisable.cshtml" />
     <None Include="Views\Shared\EditorTemplates\MailAddress.cshtml" />
+    <None Include="Views\Shared\Parts\ReturnLinkButton.cshtml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -1,5 +1,6 @@
 ﻿@{
     ViewBag.Title = " 新規追加";
+    var returnUrl = ViewBag.__ReturnUrl as string;
 }
 
 <h2>新規追加</h2>
@@ -11,11 +12,12 @@
 {
     @Html.AntiForgeryToken()
     <div class="form-horizontal">
+        @Html.Hidden("__ReturnUrl")
         @Html.EditorForModel()
         <div class="form-group">
             <div class="col-sm-offset-2 col-sm-10">
                 <input type="submit" class="btn btn-primary" value="編集を適用">
-                @Html.ActionLink("戻る", "index", null, new { @class = "btn  btn-default" })
+                @Html.Partial("Parts/ReturnLinkButton")
             </div>
         </div>
     </div>
