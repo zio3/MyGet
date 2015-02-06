@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // アセンブリに関連付けられている情報を変更するには、
 // これらの属性値を変更してください。
 [assembly: AssemblyTitle("MyBootstrapTemplate")]
-[assembly: AssemblyDescription("ブートストラップ利用のサイト作成テンプレート")]
+[assembly: AssemblyDescription("ブートストラップ利用のサイト作成テンプレートx")]
 [assembly: AssemblyConfiguration("")]  
 [assembly: AssemblyCompany("zio3")]
 [assembly: AssemblyProduct("MyBootstrapTemplate")]
